@@ -1,16 +1,16 @@
 {
-	"id": "your-module-name",
-	"name": "your-module-name",
-	"shortname": "module-shortname",
+	"id": "companion-module-binary-moipcontroller",
+	"name": "companion-module-binary-moipcontroller",
+	"shortname": "binary-moipcontroller",
 	"description": "A short one line description of your module",
 	"version": "0.0.0",
 	"license": "MIT",
-	"repository": "git+https://github.com/bitfocus/companion-module-your-module-name.git",
-	"bugs": "https://github.com/bitfocus/companion-module-your-module-name/issues",
+	"repository": "git+https://github.com/bitfocus/companion-module-binary-moipcontroller.git",
+	"bugs": "https://github.com/bitfocus/companion-module-binary-moipcontroller/issues",
 	"maintainers": [
 		{
-			"name": "Your name",
-			"email": "Your email"
+			"name": "Britt Ryan",
+			"email": "bryan@thesummitchurch.org"
 		}
 	],
 	"runtime": {
