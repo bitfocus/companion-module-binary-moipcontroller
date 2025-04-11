@@ -1,7 +1,7 @@
 {
-	"id": "companion-module-binary-moipcontroller",
-	"name": "companion-module-binary-moipcontroller",
-	"shortname": "binary-moipcontroller",
+	"id": "binary-moipcontroller",
+	"name": "binary moipcontroller",
+	"shortname": "moip ctrl",
 	"description": "A short one line description of your module",
 	"version": "0.0.0",
 	"license": "MIT",
