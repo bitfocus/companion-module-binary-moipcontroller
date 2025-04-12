@@ -13,7 +13,7 @@ module.exports = function (self) {
 				},
 			],
 			callback: async (event) => {
-				console.log('Hello world!', event.options.num)
+				self.log('info', 'Hello World!')
 			},
 		},
 	})
