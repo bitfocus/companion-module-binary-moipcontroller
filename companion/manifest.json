@@ -2,7 +2,7 @@
 	"id": "binary-moipcontroller",
 	"name": "binary moipcontroller",
 	"shortname": "moip ctrl",
-	"description": "A short one line description of your module",
+	"description": "I/O controls for the Binary B-900-MOIP-4K-CTRL",
 	"version": "0.0.0",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-binary-moipcontroller.git",
@@ -20,7 +20,7 @@
 		"entrypoint": "../main.js"
 	},
 	"legacyIds": [],
-	"manufacturer": "Your company",
-	"products": ["Your product"],
+	"manufacturer": "Binary",
+	"products": ["B-900-MOIP-4K-CTRL"],
 	"keywords": []
 }
