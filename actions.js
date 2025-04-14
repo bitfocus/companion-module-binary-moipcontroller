@@ -1,6 +1,6 @@
 module.exports = function (self) {
 	self.setActionDefinitions({
-		sample_action: {
+		sample_action: { // Sample action that came with the template
 			name: 'My First Action',
 			options: [
 				{
@@ -13,8 +13,25 @@ module.exports = function (self) {
 				},
 			],
 			callback: async (event) => {
-				self.log('info', 'Hello World!')
+				self.log('info', 'Hello World!, the number is: ' + event.options['num'])
 			},
 		},
+		set_ip:{ // Action to set the IP address
+			name: 'set-ip',
+			options:[
+				{
+					id: 'IP Address',
+					type: 'textinput',
+					label: 'IP Address',
+					default: "0.0.0.0",
+					regex: self.REGEX_IP,
+				}
+			],
+			callback: async (event) => {//needs work!!!!!!!!
+				self.setVariableValues({
+					'CTRL_IP': event.options['IP Address']
+				})
+			},
+		}
 	})
 }

@@ -1,6 +1,6 @@
 module.exports = function (self) {
 	self.setVariableDefinitions([
-		{ variableId: 'variable1', name: 'My first variable' },
+		{ variableId: 'CTRL_IP', name: 'MoIP Controller IP' },
 		{ variableId: 'variable2', name: 'My second variable' },
 		{ variableId: 'variable3', name: 'Another variable' },
 	])
