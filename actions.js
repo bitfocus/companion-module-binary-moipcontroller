@@ -37,6 +37,7 @@ module.exports = function (self) {
 			],
 			callback: ({ options }) => {
 			  const cmd = moipCommands.switchInput(options.tx, options.rx)
+			  self.log('debug', "Switching input to " + options.tx + " on receiver " + options.rx)
 			  self.sendCommand(cmd)
 			},
 		  },
