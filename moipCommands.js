@@ -9,7 +9,7 @@ module.exports = {
     getDevices: () => `?Devices\n`,
     getNames: (type = 0) => `?Name=${type}\n`, // 0 = RX, 1 = TX
     getScenes: () => `?Scenes\n`,
-    getAudioVolume: (rx) => `?AudioVolumelevel=${rx}\n`,
+    getAudioVolume: (rx) => `?AudioVolumeLevel=${rx}\n`,
     getHDMIAudioMute: (rx) => `?HDMIAudioMute=${rx}\n`,
   
     switchInput: (tx, rx) => `!Switch=${tx},${rx}\n`,
@@ -27,7 +27,7 @@ module.exports = {
     sendSerial: (type, index, baudStr, data) =>
       `!Serial=${type},${index},${baudStr},${data}\n`,
     sendIR: (type, index, pronto) => `!IR=${type},${index},${pronto}\n`,
-    setAudioVolume: (rx, level) => `!SetAudioVolumelevel=${rx},${level}\n`,
+    setAudioVolume: (rx, level) => `!SetAudioVolumeLevel=${rx},${level}\n`,
     setHDMIAudioMute: (rx, mute) => `!HDMIAudioMute=${rx},${mute}\n`, // 0 = Unmute, 1 = Mute
     activateScene: (name) => `!ActivateScene=${name}\n`,
   };

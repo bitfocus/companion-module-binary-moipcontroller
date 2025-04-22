@@ -37,13 +37,6 @@ class ModuleInstance extends InstanceBase {
 				width: 8,
 				regex: Regex.IP,
 			},
-			{
-				type: 'textinput',
-				id: 'port',
-				label: 'Target Port',
-				width: 4,
-				regex: Regex.PORT,
-			},
 		]
 	}
 
@@ -58,33 +51,44 @@ class ModuleInstance extends InstanceBase {
 		  this.log('info', 'Connected to SnapAV MoIP Controller')
 		  this.checkFeedbacks('connection_status')
 		})
-	
+
 		this.socket.on('data', (data) => {
-		  const response = data.toString()
-		  this.log('debug', `Response: ${response}`)
+			const response = data.toString().trim()
+		  
+			// Store for future use (feedbacks, variables, debugging)
+			this.state = this.state || {}
+			this.state.lastResponse = response
+		  
+			// Log to Companion log window
+			this.log('info', `[MoIP Response] ${response}`)
+		  
+			// Optional: Parse known error replies
+			if (response.includes('#Error')) {
+			  this.state.lastCommandError = true
+			  this.checkFeedbacks('recent_error')
+			} else {
+			  this.state.lastCommandError = false
+			  this.checkFeedbacks('recent_error')
+			}
+		  
+			// If you want to track volume or routing responses, start parsing here
+			// Example: if (response.startsWith('?Receivers=')) { ... }
+		  })
 	
-		  if (response.includes('#Error')) {
-			this.state.lastCommandError = true
-			this.checkFeedbacks('recent_error')
-		  } else {
-			this.state.lastCommandError = false
-			this.checkFeedbacks('recent_error')
-		  }
-		})
-	
-		this.socket.on('error', (err) => {
-		  this.log('error', `Socket error: ${err}`)
-		  this.checkFeedbacks('connection_status')
-		})
 	  }
 	
 	  sendCommand(cmd) {
-		if (this.socket && this.socket.isConnected) {
-		  this.socket.send(cmd)
-		} else {
-		  this.log('error', 'Socket not connected. Trying to reconnect...')
+		try {
+		  if (this.socket && this.socket.isConnected) {
+			this.socket.send(cmd)
+		  } else {
+			this.log('error', 'Socket not connected')
+		  }
+		} catch (err) {
+		  this.log('info', `Failed to send command: ${err.message}`)
 		}
 	  }
+	  
 	  
 
 	updateActions() {

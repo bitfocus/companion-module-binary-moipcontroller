@@ -167,17 +167,20 @@ module.exports = function (self) {
 			  },
 			],
 			callback: ({ options }) => {
-			  self.sendCommand(`?AudioVolumelevel=${options.rx}\n`)
-			  self.socket.once('data', (data) => {
-				const match = data.toString().match(/=\d+,(\d+)/)
-				if (match) {
-				  const current = parseInt(match[1])
-				  const next = Math.min(100, current + 5)
-				  const cmd = moipCommands.setAudioVolume(options.rx, next)
-				  self.sendCommand(cmd)
-				}
-			  })
-			},
+				self.sendCommand(moipCommands.getAudioVolume(options.rx))
+				self.log('info', `🔊 Volume command sent: ${moipCommands.getAudioVolume(options.rx)}`)
+				self.socket.once('data', (data) => {
+				  const match = data.toString().match(/=\d+,(\d+)/)
+				  self.log('info', `🔊 Volume response: ${data.toString()}`)
+				  if (match) {
+					const current = parseInt(match[1])
+					const next = Math.max(0, current + 5)
+					const cmd = moipCommands.setAudioVolume(options.rx, next)
+					self.log('info', `🔊 Sending volume command: ${cmd.trim()}`)
+					self.sendCommand(cmd)
+				  }
+				})
+			  },
 		  },
 	  
 		  volume_down: {
@@ -191,17 +194,34 @@ module.exports = function (self) {
 			  },
 			],
 			callback: ({ options }) => {
-			  self.sendCommand(`?AudioVolumelevel=${options.rx}\n`)
+			  self.sendCommand(moipCommands.getAudioVolume(options.rx))
+			  self.log('info', `🔊 Volume command sent: ${moipCommands.getAudioVolume(options.rx)}`)
 			  self.socket.once('data', (data) => {
 				const match = data.toString().match(/=\d+,(\d+)/)
+				self.log('info', `🔊 Volume response: ${data.toString()}`)
 				if (match) {
 				  const current = parseInt(match[1])
 				  const next = Math.max(0, current - 5)
 				  const cmd = moipCommands.setAudioVolume(options.rx, next)
+				  self.log('info', `🔊 Sending volume command: ${cmd.trim()}`)
 				  self.sendCommand(cmd)
 				}
 			  })
 			},
+		  },
+
+		  get_firmware: {
+			name: 'Get Firmware Version',
+			callback: () => {
+				self.log('info', '🟡 Action callback started')
+
+			  const cmd = moipCommands.getFirmware()
+			  self.log('info', `🟢 Command generated: ${cmd}`)
+
+			  self.sendCommand(cmd)
+			  self.log('info', '✅ Command sent to MoIP controller')
+
+		  	}
 		  },
 	})
 }

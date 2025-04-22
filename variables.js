@@ -3,8 +3,8 @@ module.exports = function (self) {
 		{ variableId: 'variable2', name: 'My second variable' },
 		{ variableId: 'variable3', name: 'Another variable' },
 	 	{ variableId: 'rx_tx_map', name: 'RX to TX Mapping' },
-     	{ variableId: 'scene_active', name: 'Active Scene Name' },
-      	{ variableId: 'volume_levels', name: 'Receiver Volume Levels (CSV)' },
+    { variableId: 'scene_active', name: 'Active Scene Name' },
+    { variableId: 'volume_levels', name: 'Receiver Volume Levels (CSV)' },
     ]);
 
     function updateVariables() {
@@ -27,7 +27,7 @@ module.exports = function (self) {
       })
 
       // Get All Volume Levels
-      self.sendCommand('?AudioVolumelevel=1\n')
+      self.sendCommand('?AudioVolumeLevel=1\n')
       self.socket.once('data', (data) => {
         const match = data.toString().match(/=\d+,(\d+)/)
         if (match) {
