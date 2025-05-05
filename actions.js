@@ -15,6 +15,7 @@ module.exports = function (self) {
 				},
 			],
 			callback: async (event) => {
+				self.initVariables()
 				self.log('info', 'Hello World!, the number is: ' + event.options['num'])
 			},
 		},
@@ -158,56 +159,48 @@ module.exports = function (self) {
 	  
 		  volume_up: {
 			name: 'Volume Up (+5)',
-			options: [
-			  {
-				type: 'number',
-				label: 'Receiver Index (RX)',
-				id: 'rx',
-				default: 1,
-			  },
-			],
-			callback: ({ options }) => {
-				self.sendCommand(moipCommands.getAudioVolume(options.rx))
-				self.log('info', `🔊 Volume command sent: ${moipCommands.getAudioVolume(options.rx)}`)
-				self.socket.once('data', (data) => {
-				  const match = data.toString().match(/=\d+,(\d+)/)
-				  self.log('info', `🔊 Volume response: ${data.toString()}`)
-				  if (match) {
-					const current = parseInt(match[1])
-					const next = Math.max(0, current + 5)
-					const cmd = moipCommands.setAudioVolume(options.rx, next)
-					self.log('info', `🔊 Sending volume command: ${cmd.trim()}`)
+
+			callback: () => {
+				if(self.getVariableValue('volume_level') !== undefined && self.getVariableValue('volume_level') !== 0){ //check volume level variable
+					let volume = self.getVariableValue('volume_level') //make local variable
+					const audioRxIndex = self.config.audioRx_index // Use default value of 1 if undefined
+					volume = Math.min(100, volume + 5) //set volume to current + 5
+					self.log('info', audioRxIndex)
+					const cmd = moipCommands.setAudioVolume(audioRxIndex, volume) //set volume to current + 5
+					self.setVariableValues({'volume_level' : volume}) //update variable
+					self.log('info', 'Volume level set to: ' + self.getVariableValue('volume_level'))//log current volume level
+					self.log('info', 'sending command: ' + cmd)
 					self.sendCommand(cmd)
-				  }
-				})
-			  },
+				} else if (self.getVariableValue('volume_level') == 0) {
+					self.log('info', 'Volume level is already at 0')
+				}else{
+					self.log('info', 'Volume level not found, initializing variables')
+					initVariables()
+				}
+			}
 		  },
 	  
 		  volume_down: {
 			name: 'Volume Down (-5)',
-			options: [
-			  {
-				type: 'number',
-				label: 'Receiver Index (RX)',
-				id: 'rx',
-				default: 1,
-			  },
-			],
-			callback: ({ options }) => {
-			  self.sendCommand(moipCommands.getAudioVolume(options.rx))
-			  self.log('info', `🔊 Volume command sent: ${moipCommands.getAudioVolume(options.rx)}`)
-			  self.socket.once('data', (data) => {
-				const match = data.toString().match(/=\d+,(\d+)/)
-				self.log('info', `🔊 Volume response: ${data.toString()}`)
-				if (match) {
-				  const current = parseInt(match[1])
-				  const next = Math.max(0, current - 5)
-				  const cmd = moipCommands.setAudioVolume(options.rx, next)
-				  self.log('info', `🔊 Sending volume command: ${cmd.trim()}`)
-				  self.sendCommand(cmd)
+			
+			callback: () => {
+				if(self.getVariableValue('volume_level') !== undefined && self.getVariableValue('volume_level') !== 0){ //check volume level variable
+					let volume = self.getVariableValue('volume_level') //make local variable
+					const audioRxIndex = self.config.audioRx_index // Use default value of 1 if undefined
+					volume = Math.max(0, volume - 5) //set volume to current - 5
+					self.log('info', audioRxIndex)
+					const cmd = moipCommands.setAudioVolume(audioRxIndex, volume) //set volume to current - 5
+					self.setVariableValues({'volume_level' : volume}) //update variable
+					self.log('info', 'Volume level set to: ' + self.getVariableValue('volume_level'))//log current volume level
+					self.log('info', 'sending command: ' + cmd)
+					self.sendCommand(cmd)
+				} else if (self.getVariableValue('volume_level') == 0) {
+					self.log('info', 'Volume level is already at 0')
+				}else{
+					self.log('info', 'Volume level not found, initializing variables')
+					initVariables()
 				}
-			  })
-			},
+			}
 		  },
 
 		  get_firmware: {
