@@ -106,14 +106,6 @@ module.exports = function (self) {
 			},
 		  },
 	  
-		  exit_session: {
-			name: 'Exit Session',
-			options: [],
-			callback: () => {
-			  const cmd = moipCommands.exitSession()
-			  self.sendCommand(cmd)
-			},
-		  },
 	  
 		  cec_control: {
 			name: 'Set CEC Mode',
@@ -161,7 +153,7 @@ module.exports = function (self) {
 			name: 'Volume Up (+5)',
 
 			callback: () => {
-				if(self.getVariableValue('volume_level') !== undefined && self.getVariableValue('volume_level') !== 0){ //check volume level variable
+				if(self.getVariableValue('volume_level') !== undefined && self.getVariableValue('volume_level') !== 100){ //check volume level variable
 					let volume = self.getVariableValue('volume_level') //make local variable
 					const audioRxIndex = self.config.audioRx_index // Use default value of 1 if undefined
 					volume = Math.min(100, volume + 5) //set volume to current + 5
@@ -171,8 +163,8 @@ module.exports = function (self) {
 					self.log('info', 'Volume level set to: ' + self.getVariableValue('volume_level'))//log current volume level
 					self.log('info', 'sending command: ' + cmd)
 					self.sendCommand(cmd)
-				} else if (self.getVariableValue('volume_level') == 0) {
-					self.log('info', 'Volume level is already at 0')
+				} else if (self.getVariableValue('volume_level') == 100) {
+					self.log('info', 'Volume level is already at 100')
 				}else{
 					self.log('info', 'Volume level not found, initializing variables')
 					initVariables()
@@ -203,18 +195,5 @@ module.exports = function (self) {
 			}
 		  },
 
-		  get_firmware: {
-			name: 'Get Firmware Version',
-			callback: () => {
-				self.log('info', '🟡 Action callback started')
-
-			  const cmd = moipCommands.getFirmware()
-			  self.log('info', `🟢 Command generated: ${cmd}`)
-
-			  self.sendCommand(cmd)
-			  self.log('info', '✅ Command sent to MoIP controller')
-
-		  	}
-		  },
 	})
 }
