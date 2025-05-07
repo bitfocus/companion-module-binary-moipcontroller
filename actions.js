@@ -17,6 +17,7 @@ module.exports = function (self) {
 			callback: async (event) => {
 				self.initVariables()
 				self.log('info', 'Hello World!, the number is: ' + event.options['num'])
+				self.log('info', '[MoIP Response] ' + self.state.lastresponse)
 			},
 		},
 
@@ -128,24 +129,8 @@ module.exports = function (self) {
 			  },
 			],
 			callback: ({ options }) => {
-			  const cmd = moipCommands.setCEC(options.rx, options.mode)
-			  self.sendCommand(cmd)
-			},
-		  },
-	  
-		  activate_scene: {
-			name: 'Activate Scene',
-			options: [
-			  {
-				type: 'textinput',
-				label: 'Scene Name',
-				id: 'name',
-				default: 'Movie Night',
-			  },
-			],
-			callback: ({ options }) => {
-			  const cmd = moipCommands.activateScene(options.name)
-			  self.sendCommand(cmd)
+				const cmd = moipCommands.setCEC(options.rx, options.mode)
+			 	self.sendCommand(cmd)
 			},
 		  },
 	  
@@ -157,17 +142,15 @@ module.exports = function (self) {
 					let volume = self.getVariableValue('volume_level') //make local variable
 					const audioRxIndex = self.config.audioRx_index // Use default value of 1 if undefined
 					volume = Math.min(100, volume + 5) //set volume to current + 5
-					self.log('info', audioRxIndex)
 					const cmd = moipCommands.setAudioVolume(audioRxIndex, volume) //set volume to current + 5
 					self.setVariableValues({'volume_level' : volume}) //update variable
 					self.log('info', 'Volume level set to: ' + self.getVariableValue('volume_level'))//log current volume level
-					self.log('info', 'sending command: ' + cmd)
-					self.sendCommand(cmd)
+					self.sendCommand(cmd) //send command to MoIP
 				} else if (self.getVariableValue('volume_level') == 100) {
 					self.log('info', 'Volume level is already at 100')
 				}else{
 					self.log('info', 'Volume level not found, initializing variables')
-					initVariables()
+					updateVariables()
 				}
 			}
 		  },
@@ -180,12 +163,10 @@ module.exports = function (self) {
 					let volume = self.getVariableValue('volume_level') //make local variable
 					const audioRxIndex = self.config.audioRx_index // Use default value of 1 if undefined
 					volume = Math.max(0, volume - 5) //set volume to current - 5
-					self.log('info', audioRxIndex)
 					const cmd = moipCommands.setAudioVolume(audioRxIndex, volume) //set volume to current - 5
 					self.setVariableValues({'volume_level' : volume}) //update variable
 					self.log('info', 'Volume level set to: ' + self.getVariableValue('volume_level'))//log current volume level
-					self.log('info', 'sending command: ' + cmd)
-					self.sendCommand(cmd)
+					self.sendCommand(cmd) //send command
 				} else if (self.getVariableValue('volume_level') == 0) {
 					self.log('info', 'Volume level is already at 0')
 				}else{

@@ -27,7 +27,7 @@ class ModuleInstance extends InstanceBase {
 		this.updateActions() // export actions
 		this.updateFeedbacks() // export feedbacks
 		this.updateVariableDefinitions() // export variable definitions
-		this.initVariables() // export variables
+		this.updateVariables() // export variables
 	}
 	// When module gets deleted
 	async destroy() {
@@ -81,7 +81,7 @@ class ModuleInstance extends InstanceBase {
 
 		this.socket.on('data', (data) => {
 			const response = data.toString().trim()
-		  
+
 			// Store for future use (feedbacks, variables, debugging)
 			this.state = this.state || {}
 			this.state.lastResponse = response
@@ -128,7 +128,7 @@ class ModuleInstance extends InstanceBase {
 		UpdateVariableDefinitions(this)
 	}
 
-	initVariables() {
+	updateVariables() {
 		if (this.socket && this.socket.isConnected) {
 			// Request and store volume level from audio reciever
 			this.sendCommand(moipCommands.getAudioVolume(this.config.audioRx_index))

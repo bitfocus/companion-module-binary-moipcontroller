@@ -5,7 +5,7 @@
 
 module.exports = {
     getFirmware: () => `?Firmware\n`,
-    getReceivers: () => `?Receivers\n`,
+    getRouting: () => `?Receivers\n`,
     getDevices: () => `?Devices\n`,
     getNames: (type = 0) => `?Name=${type}\n`, // 0 = RX, 1 = TX
     getScenes: () => `?Scenes\n`,
