@@ -24,10 +24,17 @@ class ModuleInstance extends InstanceBase {
 		}
 		await waitForSocketConnection()
 
+		this.routing = {} // Initialize routing object
+		this.updateControllerInfo() // export variables
+		
 		this.updateActions() // export actions
 		this.updateFeedbacks() // export feedbacks
 		this.updateVariableDefinitions() // export variable definitions
-		this.updateVariables() // export variables
+		
+		await new Promise((resolve) => setTimeout(resolve, 500))
+
+		this.sendCommand(moipCommands.getRouting())
+		this.log('info', 'Requesting initial routing information...')
 	}
 	// When module gets deleted
 	async destroy() {
@@ -68,13 +75,11 @@ class ModuleInstance extends InstanceBase {
 		return new Promise((resolve, reject) => {
 			this.socket.on('connect', () => {
 				this.log('info', 'Connected to SnapAV MoIP Controller')
-				this.checkFeedbacks('connection_status')
 				resolve();
 			})
 			this.socket.on('error', (err) => {
 				this.log('error', `Socket error: ${err.message}`)
 				this.updateStatus(InstanceStatus.ConnectionFailure)
-				this.checkFeedbacks('connection_status')
 				reject(err);
 			})
 		}),
@@ -87,15 +92,19 @@ class ModuleInstance extends InstanceBase {
 			this.state.lastResponse = response
 		  
 			// Log to Companion log window
-			this.log('info', `[MoIP Response] ${response}`)
+			this.log('info', `[MoIP Response] ${this.state.lastResponse}`)
+
+			
+			if (response.startsWith('?Receivers=') || response.startsWith('~Receivers=')) {
+				this.parseRouting(response)
+			}
+			
 		  
 			// Optional: Parse known error replies
 			if (response.includes('#Error')) {
 			  this.state.lastCommandError = true
-			  this.checkFeedbacks('recent_error')
 			} else {
 			  this.state.lastCommandError = false
-			  this.checkFeedbacks('recent_error')
 			}
 		  
 			// If you want to track volume or routing responses, start parsing here
@@ -104,10 +113,11 @@ class ModuleInstance extends InstanceBase {
 	
 	  }
 	
-	  sendCommand(cmd) {
+	   sendCommand(cmd) {
 		try {
 		  if (this.socket && this.socket.isConnected) {
 			this.socket.send(cmd)
+			this.log('info', `Sent command: ${cmd}`)
 		  } else {
 			this.log('error', 'Socket not connected')
 		  }
@@ -115,6 +125,41 @@ class ModuleInstance extends InstanceBase {
 		  this.log('info', `Failed to send command: ${err.message}`)
 		}
 	  }
+
+	  /**
+ * Parses a TCP response string like "?Receivers=1:3,1:2,2:1"
+ * and returns a lookup object where each receiver maps to a transmitter.
+ *
+ */
+		parseRouting(response) {
+			const prefix = '?Receivers='
+			const mappingString = response.slice(prefix.length);
+			const pairs = mappingString.split(',')
+			const routing = {}
+	  
+			for (const pair of pairs) {
+				// Split "1:3" into [1, 3] and convert to numbers
+				const [transmitter, receiver] = pair.split(':').map(Number)
+	  
+				// Basic validation to ensure valid numbers
+				if (isNaN(receiver) || isNaN(transmitter)) {
+					this.log('info', `Invalid pair encountered: ${pair}`)
+					throw new Error(`Invalid pair: ${pair}`)
+				}
+	  
+				// Store in object
+				routing[receiver] = transmitter;
+				this.log('info', `Transmitter ${transmitter} is streaming to Receiver ${receiver}`)
+				//this.log('info', `Receiver ${receiver} is streaming Transmitter ${transmitter}`)
+			}
+
+			this.routing = routing
+			this.checkFeedbacks() // Update feedbacks
+		}
+ 	 
+  
+	  
+
 
 	updateActions() {
 		UpdateActions(this)
@@ -128,9 +173,9 @@ class ModuleInstance extends InstanceBase {
 		UpdateVariableDefinitions(this)
 	}
 
-	updateVariables() {
+	async updateControllerInfo() {
+		//Request and parse volume level
 		if (this.socket && this.socket.isConnected) {
-			// Request and store volume level from audio reciever
 			this.sendCommand(moipCommands.getAudioVolume(this.config.audioRx_index))
 			this.socket.once('data', (data) => {
 				const match = data.toString().match(/=\d+,(\d+)/)
@@ -142,8 +187,11 @@ class ModuleInstance extends InstanceBase {
 				}
 			})
 		} 
+
+		//Request Routing information
+		//
+		
 	} 
-	
 }
 
 runEntrypoint(ModuleInstance, UpgradeScripts)

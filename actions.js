@@ -15,9 +15,15 @@ module.exports = function (self) {
 				},
 			],
 			callback: async (event) => {
-				self.initVariables()
-				self.log('info', 'Hello World!, the number is: ' + event.options['num'])
-				self.log('info', '[MoIP Response] ' + self.state.lastresponse)
+				//self.log('info', 'Hello World!, the number is: ' + event.options['num'])
+				const cmd = moipCommands.getRouting()
+				self.sendCommand(cmd)
+				setTimeout(() => {
+					for (let i = 1; i <= 3; i++) {
+						let routingValue = self.routing[i]
+						self.log('info', `Receiver ${i} is streaming transmitter ${routingValue}`)
+					}
+				}, 10)
 			},
 		},
 
@@ -150,7 +156,7 @@ module.exports = function (self) {
 					self.log('info', 'Volume level is already at 100')
 				}else{
 					self.log('info', 'Volume level not found, initializing variables')
-					updateVariables()
+					self.updateControllerInfo()
 				}
 			}
 		  },
@@ -171,7 +177,7 @@ module.exports = function (self) {
 					self.log('info', 'Volume level is already at 0')
 				}else{
 					self.log('info', 'Volume level not found, initializing variables')
-					initVariables()
+					self.updateControllerInfo()
 				}
 			}
 		  },

@@ -22,8 +22,9 @@ module.exports = async function (self) {
 				},
 			],
 			callback: (feedback) => {
-				console.log('Hello world!', feedback.options.num)
+				self.log('info', 'Hello world!', feedback.options.num)
 				if (feedback.options.num > 5) {
+
 					return true
 				} else {
 					return false
@@ -37,8 +38,8 @@ module.exports = async function (self) {
 			label: 'Audio/Video Route',
 			description: 'Feedback for the current audio/video route',
 			defaultStyle: {
-				bgcolor: combineRgb(0, 0, 0),
-				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(255, 0, 0),
+				color: combineRgb(0, 0, 0),
 			},
 			options: [
 				{
@@ -47,6 +48,7 @@ module.exports = async function (self) {
 					label: 'Transmitter #',
 					default: 1,
 					min: 1,
+					
 				},
 				{
 					id: 'rx',
@@ -56,31 +58,14 @@ module.exports = async function (self) {
 					min: 1,	
 				}
 			],
-			callback: ({ options }) => {
-				// const cmd = moipCommands.getRouting()
-				// self.sendCommand(cmd)
-				// self.log('debug', `Checking route for TX ${options.tx} to RX ${options.rx}`)
-				// self.socket.once(data => {
-				// 	const response = data.toString()
-				// 	self.log('debug', `Received response: ${response}`)
-					
-				// 	// This is a placeholder; you will need to implement the actual parsing logic
-				// 	const isActive = response.includes(`TX${options.tx} RX${options.rx}`)
-					
-				// 	if (isActive) {
-				// 		return true
-				// 	} else {
-				// 		return false
-				// 	}
-				// })
+			callback: (feedback) => {
+				const tx = feedback.options.tx  // User-selected Transmitter #
+				const rx = feedback.options.rx  // User-selected Receiver #
 
-				
+				return self.routing[rx] === tx // Update the routing object with the current state
 
-				// // For now, we'll just return true for demonstration purposes
-				// return true
-				
 			},
-		}
+		},
 
 	})
 }
