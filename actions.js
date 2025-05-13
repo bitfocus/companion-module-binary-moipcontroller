@@ -2,30 +2,30 @@ const moipCommands = require('./moipCommands')
 
 module.exports = function (self) {
 	self.setActionDefinitions({
-		sample_action: { // Sample action that came with the template
-			name: 'Say Hello!',
-			options: [
-				{
-					id: 'num',
-					type: 'number',
-					label: 'Test',
-					default: 5,
-					min: 0,
-					max: 100,
-				},
-			],
-			callback: async (event) => {
-				//self.log('info', 'Hello World!, the number is: ' + event.options['num'])
-				const cmd = moipCommands.getRouting()
-				self.sendCommand(cmd)
-				setTimeout(() => {
-					for (let i = 1; i <= 3; i++) {
-						let routingValue = self.routing[i]
-						self.log('info', `Receiver ${i} is streaming transmitter ${routingValue}`)
-					}
-				}, 10)
-			},
-		},
+		// sample_action: { // Sample action that came with the template
+		// 	name: 'Say Hello!',
+		// 	options: [
+		// 		{
+		// 			id: 'num',
+		// 			type: 'number',
+		// 			label: 'Test',
+		// 			default: 5,
+		// 			min: 0,
+		// 			max: 100,
+		// 		},
+		// 	],
+		// 	callback: async (event) => {
+		// 		//self.log('info', 'Hello World!, the number is: ' + event.options['num'])
+		// 		const cmd = moipCommands.getRouting()
+		// 		self.sendCommand(cmd)
+		// 		setTimeout(() => {
+		// 			for (let i = 1; i <= 3; i++) {
+		// 				let routingValue = self.routing[i]
+		// 				self.log('info', `Receiver ${i} is streaming transmitter ${routingValue}`)
+		// 			}
+		// 		}, 10)
+		// 	},
+		// },
 
 		switch_input: {
 			name: 'Switch Input',
