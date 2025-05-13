@@ -16,13 +16,23 @@ class ModuleInstance extends InstanceBase {
 		this.updateStatus(InstanceStatus.Ok)
 
 		this.initTCP() // Initialize TCP connection
-		const waitForSocketConnection = async () => {
+		const waitForSocketConnection = async (timeout = 10000) => {
+			const startTime = Date.now()
 			while (!this.socket || !this.socket.isConnected) {
+				if (Date.now() - startTime > timeout) {
+					this.log('error', 'Socket connection timed out')
+					throw new Error('Socket connection timed out')
+				}
 				this.log('info', 'Waiting for socket connection...')
 				await new Promise((resolve) => setTimeout(resolve, 500))
 			}
 		}
-		await waitForSocketConnection()
+		try {
+			await waitForSocketConnection()
+		} catch (err) {
+			this.updateStatus(InstanceStatus.ConnectionFailure)
+			return
+		}
 
 		this.routing = {} // Initialize routing object
 		this.updateControllerInfo() // export variables
@@ -30,7 +40,7 @@ class ModuleInstance extends InstanceBase {
 		this.updateActions() // export actions
 		this.updateFeedbacks() // export feedbacks
 		this.updateVariableDefinitions() // export variable definitions
-		
+
 		await new Promise((resolve) => setTimeout(resolve, 500))
 
 		this.sendCommand(moipCommands.getRouting())
@@ -39,6 +49,7 @@ class ModuleInstance extends InstanceBase {
 	// When module gets deleted
 	async destroy() {
 		this.log('debug', 'destroy')
+
 	}
 
 	async configUpdated(config) {
