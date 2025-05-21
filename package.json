@@ -18,7 +18,9 @@
 		"@companion-module/tools": "^2.1.1",
 		"@typescript-eslint/eslint-plugin": "^8.29.1",
 		"@typescript-eslint/parser": "^8.29.1",
-		"prettier": "^3.4.2"
+		"eslint": "^9.27.0",
+		"prettier": "^3.4.2",
+		"typescript": "^5.8.3"
 	},
 	"prettier": "@companion-module/tools/.prettierrc.json",
 	"packageManager": "yarn@4.5.3"
