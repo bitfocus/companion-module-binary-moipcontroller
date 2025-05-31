@@ -13,26 +13,8 @@ class ModuleInstance extends InstanceBase {
 	async init(config) {
 		this.config = config
 
-		this.updateStatus(InstanceStatus.Ok)
-
+		this.updateStatus(InstanceStatus.Connecting)
 		this.initTCP() // Initialize TCP connection
-		const waitForSocketConnection = async (timeout = 10000) => {
-			const startTime = Date.now()
-			while (!this.socket || !this.socket.isConnected) {
-				if (Date.now() - startTime > timeout) {
-					this.log('error', 'Socket connection timed out')
-					throw new Error('Socket connection timed out')
-				}
-				this.log('info', 'Waiting for socket connection...')
-				await new Promise((resolve) => setTimeout(resolve, 500))
-			}
-		}
-		try {
-			await waitForSocketConnection()
-		} catch (err) {
-			this.updateStatus(InstanceStatus.ConnectionFailure)
-			return
-		}
 
 		this.routing = {} // Initialize routing object
 		this.updateControllerInfo() // export variables
@@ -40,20 +22,20 @@ class ModuleInstance extends InstanceBase {
 		this.updateActions() // export actions
 		this.updateFeedbacks() // export feedbacks
 		this.updateVariableDefinitions() // export variable definitions
-
-		await new Promise((resolve) => setTimeout(resolve, 500))
-
-		this.sendCommand(moipCommands.getRouting())
-		this.log('info', 'Requesting initial routing information...')
 	}
 	// When module gets deleted
 	async destroy() {
+		if (this.socket) {
+			this.socket.destroy()
+			this.socket = null
+		}
+		this.updateStatus(InstanceStatus.Disconnected)
 		this.log('debug', 'destroy')
-
 	}
 
 	async configUpdated(config) {
 		this.config = config
+		this.init()
 	}
 	// Return config fields for web config
 	getConfigFields() {
@@ -82,19 +64,21 @@ class ModuleInstance extends InstanceBase {
 		}
 
 		this.socket = new TCPHelper(this.config.host, 23)
-		
-		return new Promise((resolve, reject) => {
-			this.socket.on('connect', () => {
-				this.log('info', 'Connected to SnapAV MoIP Controller')
-				resolve();
-			})
-			this.socket.on('error', (err) => {
-				this.log('error', `Socket error: ${err.message}`)
-				this.updateStatus(InstanceStatus.ConnectionFailure)
-				reject(err);
-			})
-		}),
 
+		this.socket.on('connect', () => {
+			this.log('info', 'Connected to SnapAV MoIP Controller')
+			this.updateStatus(InstanceStatus.Ok)
+			this.log('info', 'Requesting initial routing information from MoIP Controller...')
+			this.sendCommand(moipCommands.getRouting())
+		})
+
+		this.socket.on('error', (err) => {
+			this.log('error', `Socket error: ${err.message}`)
+			this.updateStatus(InstanceStatus.ConnectionFailure)
+		})
+
+
+		//Incoming message handler
 		this.socket.on('data', (data) => {
 			const response = data.toString().trim()
 
