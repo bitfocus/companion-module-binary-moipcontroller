@@ -182,5 +182,26 @@ module.exports = function (self) {
 			}
 		  },
 
+		  volume_mute: {
+			name: 'Mute Volume',
+			callback: () => {
+				const audioRxIndex = self.config.audioRx_index // Use default value of 1 if undefined
+				const cmd = moipCommands.setAudioVolume(audioRxIndex, 0) //mute audio
+				self.log('info', 'Volume muted')//log current volume level
+				self.sendCommand(cmd) //send command to MoIP
+			}
+		  },
+
+		  volume_unmute: {
+			name: 'Unmute Volume',
+			callback: () => {
+				let volume = self.getVariableValue('volume_level') //make local variable
+				const audioRxIndex = self.config.audioRx_index // Use default value of 1 if undefined
+				const cmd = moipCommands.setAudioVolume(audioRxIndex, volume) //unmute audio
+				self.log('info', 'Volume unmuted')//log current volume level
+				self.sendCommand(cmd) //send command to MoIP
+			}
+		  },
+
 	})
 }
