@@ -17,6 +17,10 @@ class ModuleInstance extends InstanceBase {
 		this.initTCP() // Initialize TCP connection
 
 		this.routing = {} // Initialize routing object
+		this.rxNames = {} // Initialize receiver device names object
+		this.txNames = {} // Initialize transmitter device names object
+		this.rxList = [] // Initialize RX list
+		this.txList = [] // Initialize TX list
 		this.updateControllerInfo() // export variables
 		
 		this.updateActions() // export actions
@@ -69,7 +73,18 @@ class ModuleInstance extends InstanceBase {
 			this.log('info', 'Connected to SnapAV MoIP Controller')
 			this.updateStatus(InstanceStatus.Ok)
 			this.log('info', 'Requesting initial routing information from MoIP Controller...')
-			this.sendCommand(moipCommands.getRouting())
+			
+			setTimeout(() => {
+				this.sendCommand(moipCommands.getNames(0)) // Get RX names after 2 seconds
+			}, 500)
+
+			setTimeout(() => {
+				this.sendCommand(moipCommands.getNames(1)) // Get TX names after 4 seconds
+			}, 1000)
+			setTimeout(() => {
+				this.sendCommand(moipCommands.getRouting()) // Get routing information after 6 seconds
+			}, 1500)
+			
 		})
 
 		this.socket.on('error', (err) => {
@@ -89,11 +104,15 @@ class ModuleInstance extends InstanceBase {
 			// Log to Companion log window
 			this.log('info', `[MoIP Response] ${this.state.lastResponse}`)
 
-			
+			// Parse routing information
 			if (response.startsWith('?Receivers=') || response.startsWith('~Receivers=')) {
 				this.parseRouting(response)
 			}
-			
+
+			// Parse device names
+			if (response.startsWith('?Name=')) {
+				this.parseNames(response)
+			}
 		  
 			// Optional: Parse known error replies
 			if (response.includes('#Error')) {
@@ -144,15 +163,86 @@ class ModuleInstance extends InstanceBase {
 	  
 				// Store in object
 				routing[receiver] = transmitter;
-				this.log('info', `Transmitter ${transmitter} is streaming to Receiver ${receiver}`)
+				//this.log('info', `Transmitter ${transmitter} is streaming to Receiver ${receiver}`)
 				//this.log('info', `Receiver ${receiver} is streaming Transmitter ${transmitter}`)
+
+				//make a new object and store the routing using names
+				if (this.rxNames[receiver] && this.txNames[transmitter]) {
+					this.routing[this.rxNames[receiver]] = this.txNames[transmitter]
+					this.log('info', `${this.rxNames[receiver]} is streaming ${this.txNames[transmitter]}`)
+				} 
 			}
 
 			this.routing = routing
-			this.checkFeedbacks() // Update feedbacks
+		 	this.checkFeedbacks() // Update feedbacks
 		}
  	 
-  
+		parseNames(response) {
+			if (response.startsWith('?Name=0')) {
+				//
+				// Parse RX names
+				//
+				this.log('info', 'Parsing RX names from response')
+				let rxNamesMap = {}
+				let rxNamesRaw = ''
+				const lines = response.toString().split('\n')
+				for (const line of lines) {
+					const match = line.match(/\?Name=0,(\d+),(.+)/)
+					if (match) {
+						const index = match[1]
+						const name = match[2].trim()
+						rxNamesMap[index] = name
+						rxNamesRaw += name + ', '
+					}
+				}
+				if (Object.keys(rxNamesMap).length > 0) {
+					this.rxNames = { ...this.rxNames, ...rxNamesMap }					
+				} else {this.log('error', 'Failed to parse RX names response')}
+
+				this.rxList = Object.entries(this.rxNames).map(([index, name]) => ({
+					id: index,
+					label: name,
+				}))
+				this.log('info', `RX List: ${JSON.stringify(this.rxList)}`)
+
+				
+			} else if (response.startsWith('?Name=1')) {
+				//
+				// Parse TX names
+				//
+				this.log('info', 'Parsing TX names from response')
+				let txNamesMap = {}
+				let txNamesRaw = ''
+				const lines = response.toString().split('\n')
+				for (const line of lines) {
+					const match = line.match(/\?Name=1,(\d+),(.+)/)
+					if (match) {
+						const index = match[1]
+						const name = match[2].trim()
+						txNamesMap[index] = name
+						txNamesRaw += name + ', '
+					}
+				}
+				if (Object.keys(txNamesMap).length > 0) {
+					this.txNames = { ...this.txNames, ...txNamesMap }
+				} else {this.log('error', 'Failed to parse TX names response')}
+
+				this.txList = Object.entries(this.txNames).map(([index, name]) => ({
+					id: index,
+					label: name,
+				}))
+				this.log('info', `TX List: ${JSON.stringify(this.txList)}`)
+			}
+			else {
+			this.log('error', 'Unknown response format for names')
+			return
+			}
+
+			// Update actions and feedbacks after parsing names
+			this.updateActions()
+			this.updateFeedbacks()
+			this.checkFeedbacks()
+		}
 	  
 
 
@@ -177,14 +267,16 @@ class ModuleInstance extends InstanceBase {
 				if (match) {
 					const currentVolume = parseInt(match[1])
 					this.setVariableValues({'volume_level' : currentVolume})
+					this.log('info', `Current volume level: ${currentVolume}`)
 				} else {
 					this.log('error', 'Failed to parse volume query response')
 				}
 			})
+		} else {
+			this.log('error', 'Socket not connected, cannot update controller info')
+			return
 		} 
 
-		//Request Routing information
-		//
 		
 	} 
 }

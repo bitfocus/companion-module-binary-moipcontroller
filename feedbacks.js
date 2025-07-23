@@ -44,25 +44,20 @@ module.exports = async function (self) {
 			options: [
 				{
 					id: 'tx',
-					type: 'number',
-					label: 'Transmitter #',
-					default: 1,
-					min: 1,
+					type: 'dropdown',
+					label: 'Source (Tx)',
+					choices: self.txList,  // Use the txList generated from names
 					
 				},
 				{
 					id: 'rx',
-					type: 'number',
-					label: 'Receiver #',
-					default: 1,
-					min: 1,	
+					type: 'dropdown',
+					label: 'Destination (Rx)',
+					choices: self.rxList,  // Use the rxList generated from names
 				}
 			],
-			callback: (feedback) => {
-				const tx = feedback.options.tx  // User-selected Transmitter #
-				const rx = feedback.options.rx  // User-selected Receiver #
-
-				return self.routing[rx] === tx // Update the routing object with the current state
+			callback: ({options}) => {
+				return self.routing[options.rx] == options.tx // Update the routing object with the current state
 
 			},
 		},

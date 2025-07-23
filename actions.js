@@ -2,50 +2,27 @@ const moipCommands = require('./moipCommands')
 
 module.exports = function (self) {
 	self.setActionDefinitions({
-		// sample_action: { // Sample action that came with the template
-		// 	name: 'Say Hello!',
-		// 	options: [
-		// 		{
-		// 			id: 'num',
-		// 			type: 'number',
-		// 			label: 'Test',
-		// 			default: 5,
-		// 			min: 0,
-		// 			max: 100,
-		// 		},
-		// 	],
-		// 	callback: async (event) => {
-		// 		//self.log('info', 'Hello World!, the number is: ' + event.options['num'])
-		// 		const cmd = moipCommands.getRouting()
-		// 		self.sendCommand(cmd)
-		// 		setTimeout(() => {
-		// 			for (let i = 1; i <= 3; i++) {
-		// 				let routingValue = self.routing[i]
-		// 				self.log('info', `Receiver ${i} is streaming transmitter ${routingValue}`)
-		// 			}
-		// 		}, 10)
-		// 	},
-		// },
-
 		switch_input: {
 			name: 'Switch Input',
 			options: [
 			  {
-				type: 'number',
-				label: 'Transmitter #',
+				type: 'dropdown',
+				label: 'Source (Tx)',
 				id: 'tx',
-				default: 1,
+				choices: self.txList,
 			  },
 			  {
-				type: 'number',
-				label: 'Receiver #',
+				type: 'dropdown',
+				label: 'Destination (Rx)',
 				id: 'rx',
-				default: 1,
+				choices: self.rxList,
 			  },
 			],
 			callback: ({ options }) => {
-			  const cmd = moipCommands.switchInput(options.tx, options.rx)
-			  self.log('debug', "Switching input to " + options.tx + " on receiver " + options.rx)
+			  const txIndex = options.tx
+			  const rxIndex = options.rx
+			  const cmd = moipCommands.switchInput(txIndex, rxIndex)
+			  self.log('info', `Sending ${options.tx} to ${options.rx}`)
 			  self.sendCommand(cmd)
 			},
 		  },
@@ -54,10 +31,10 @@ module.exports = function (self) {
 			name: 'Disconnect Input from Receiver',
 			options: [
 			  {
-				type: 'number',
-				label: 'Receiver Index (RX)',
+				type: 'dropdown',
+				label: 'Destination (Rx)',
 				id: 'rx',
-				default: 1,
+				choices: self.rxList,
 			  },
 			],
 			callback: ({ options }) => {
